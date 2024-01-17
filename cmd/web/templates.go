@@ -13,6 +13,7 @@ var functions = template.FuncMap{}
 type templateData struct {
 	Form            any
 	IsAuthenticated bool
+	PhoneProviders  map[string]string
 }
 
 func (app *application) newTemplateData(r *http.Request) *templateData {

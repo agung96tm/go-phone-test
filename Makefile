@@ -14,12 +14,20 @@ help:
 ## run/api: run the api application
 .PHONY: run/api
 run/api:
-	go run ./cmd/api -addr ${API_ADDR} -db-dsn=${DB_DSN} -secret-key=${SECRET_KEY}
+	go run ./cmd/api -addr ${API_ADDR} \
+		-db-dsn=${DB_DSN} \
+		-secret-key=${SECRET_KEY} \
+		-oauth2-google-clientid=${GOOGLE_OAUTH2_CLIENT_ID} \
+		-oauth2-google-clientsecret=${GOOGLE_OAUTH2_CLIENT_SECRET}
 
 ## run/web: run the web application
 .PHONY: run/web
 run/web:
-	go run ./cmd/web -addr :3000
+	go run ./cmd/web -addr ${WEB_ADDR} \
+		-db-dsn=${DB_DSN} \
+		-secret-key=${SECRET_KEY} \
+		-oauth2-google-clientid=${GOOGLE_OAUTH2_CLIENT_ID} \
+		-oauth2-google-clientsecret=${GOOGLE_OAUTH2_CLIENT_SECRET}
 
 
 # === Migrations ===

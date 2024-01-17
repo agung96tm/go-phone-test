@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/agung96tm/go-phone-test/internal/authentication"
+	"github.com/agung96tm/go-phone-test/internal/models"
 	"net/http"
 	"time"
 )
@@ -21,6 +22,8 @@ func (app *application) phoneCreateHandler(w http.ResponseWriter, r *http.Reques
 		PhoneNumber string `form:"phone_number"`
 		Provider    string `form:"provider"`
 	}{}
+	data.PhoneProviders = models.Providers
+
 	app.render(w, http.StatusOK, "phone_create.tmpl", data)
 }
 

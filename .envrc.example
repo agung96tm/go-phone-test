@@ -1,5 +1,6 @@
 export SECRET_KEY=foobar
 export API_ADDR=:8000
+export WEB_ADDR=:3000
 export DB_DSN=postgres://phone_user:phone_password@localhost:5432/phone_db?sslmode=disable
 export GOOGLE_OAUTH2_CLIENT_ID=
 export GOOGLE_OAUTH2_CLIENT_SECRET=
