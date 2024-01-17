@@ -1,0 +1,16 @@
+version: '3'
+services:
+  db:
+    image: postgres:13-alpine
+    container_name: phone-go-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - phone-db-data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_PASSWORD=phone_password
+      - POSTGRES_USER=phone_user
+      - POSTGRES_DB=phone_db
+
+volumes:
+  phone-db-data: {}

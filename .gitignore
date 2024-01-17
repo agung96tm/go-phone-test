@@ -1,0 +1,9 @@
+/bin
+tls/
+tmp/
+
+# editor
+.idea/
+
+# env
+.envrc
