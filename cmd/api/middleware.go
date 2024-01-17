@@ -1,6 +1,13 @@
 package main
 
-import "net/http"
+import (
+	"errors"
+	"github.com/agung96tm/go-phone-test/internal/authentication"
+	"github.com/agung96tm/go-phone-test/internal/models"
+	"net/http"
+	"strconv"
+	"strings"
+)
 
 func (app *application) enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +28,63 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 					}
 				}
 			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) authenticate(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Vary", "Authorization")
+		authorizationHeader := r.Header.Get("Authorization")
+
+		if authorizationHeader == "" {
+			r := app.contextSetUser(r, models.AnonymousUser)
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		headerParts := strings.Split(authorizationHeader, " ")
+		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
+			app.invalidAuthenticationTokenResponse(w, r)
+			return
+		}
+
+		token := headerParts[1]
+		claims, err := authentication.GetClaims(token)
+		if err != nil {
+		}
+
+		userID, err := strconv.Atoi(claims.Subject)
+		if err != nil {
+			app.invalidCredentialsResponse(w, r)
+			return
+		}
+
+		user, err := app.models.User.Get(userID)
+		if err != nil {
+			switch {
+			case errors.Is(err, models.NoDataFound):
+				app.invalidAuthenticationTokenResponse(w, r)
+			default:
+				app.serverErrorResponse(w, r, err)
+			}
+			return
+		}
+
+		r = app.contextSetUser(r, user)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) requireAuthentication(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+
+		if user.IsAnonymous() {
+			app.invalidCredentialsResponse(w, r)
+			return
 		}
 
 		next.ServeHTTP(w, r)

@@ -96,7 +96,11 @@ type Token struct {
 	Token string `json:"token"`
 }
 
-func (g GoogleOauth2) SendLoginGoogle(token string) (*Token, error) {
+type TokenResp struct {
+	Access string `json:"access"`
+}
+
+func (g GoogleOauth2) SendLoginGoogle(token string) (*TokenResp, error) {
 	reqToken := Token{Token: token}
 	body, _ := json.Marshal(reqToken)
 	resp, err := http.Post(g.SendTokenUrl, "application/json", bytes.NewBuffer(body))
@@ -111,8 +115,9 @@ func (g GoogleOauth2) SendLoginGoogle(token string) (*Token, error) {
 		return nil, err
 	}
 
-	var result Token
+	var result TokenResp
 	if err := json.Unmarshal(responseBody, &result); err != nil {
+		fmt.Println(string(responseBody))
 		return nil, err
 	}
 

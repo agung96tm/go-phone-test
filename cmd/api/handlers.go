@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"github.com/agung96tm/go-phone-test/internal/authentication"
 	"github.com/agung96tm/go-phone-test/internal/models"
 	"github.com/agung96tm/go-phone-test/internal/validator"
 	"net/http"
@@ -16,7 +18,35 @@ func (app *application) apiSocialGoogleHandler(w http.ResponseWriter, r *http.Re
 		app.errorResponse(w, r, http.StatusBadRequest, nil)
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"token": input.Token}, nil)
+	userData, err := app.googleOauth2.GetUserDataByToken(input.Token)
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, err.Error())
+	}
+
+	user, err := app.models.User.GetByEmail(userData.Email)
+	if err != nil {
+		switch {
+		case errors.Is(err, models.NoDataFound):
+			{
+				user, err = app.models.User.InsertWithRandomPassword(
+					userData.Email,
+					userData.Email,
+				)
+				if err != nil {
+					app.serverErrorResponse(w, r, err)
+				}
+			}
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+	}
+
+	accessToken, err := authentication.GenerateJWT(user)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"access": accessToken}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

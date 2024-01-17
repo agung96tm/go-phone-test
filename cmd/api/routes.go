@@ -2,16 +2,21 @@ package main
 
 import (
 	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
 	"net/http"
 )
 
 func (app *application) routes() http.Handler {
 	routes := httprouter.New()
 
-	routes.HandlerFunc(http.MethodPost, "/v1/social/google/", app.apiSocialGoogleHandler)
+	dynamic := alice.New(app.enableCORS, app.authenticate)
 
-	routes.HandlerFunc(http.MethodPost, "/v1/phones-auto/", app.apiPhoneAutoHandler)
-	routes.HandlerFunc(http.MethodGet, "/v1/phones/", app.apiPhoneListHandler)
-	routes.HandlerFunc(http.MethodPost, "/v1/phones/", app.apiPhoneCreateHandler)
-	return app.enableCORS(routes)
+	routes.Handler(http.MethodPost, "/v1/social/google/", dynamic.ThenFunc(app.apiSocialGoogleHandler))
+	routes.Handler(http.MethodPost, "/v1/phones-auto/", dynamic.ThenFunc(app.apiPhoneAutoHandler))
+
+	protected := dynamic.Append(app.requireAuthentication)
+	routes.Handler(http.MethodGet, "/v1/phones/", protected.ThenFunc(app.apiPhoneListHandler))
+	routes.Handler(http.MethodPost, "/v1/phones/", protected.ThenFunc(app.apiPhoneCreateHandler))
+
+	return routes
 }

@@ -47,25 +47,6 @@ func (app *application) oauthGoogleLogin(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *application) oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
-	//http.SetCookie(w, &http.Cookie{
-	//	Name:     "accessToken",
-	//	Value:    "testtoken",
-	//	HttpOnly: false,
-	//	Path:     "/",
-	//	MaxAge:   3600,
-	//	Secure:   false,
-	//})
-	//
-	//acc, err := r.Cookie("accessToken")
-	//if err != nil {
-	//	fmt.Println("error", err)
-	//	return
-	//}
-	//
-	//fmt.Println("Cookie Value:", acc.Value)
-	//
-	//w.WriteHeader(http.StatusOK)
-	//w.Write([]byte("Cookie set and retrieved successfully"))
 	if valid := app.googleOauth2.StateValid(r); !valid {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
@@ -85,7 +66,7 @@ func (app *application) oauthGoogleCallback(w http.ResponseWriter, r *http.Reque
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     authentication.AccessTokenKey,
-		Value:    token.Token,
+		Value:    token.Access,
 		HttpOnly: false,
 		Path:     "/",
 		MaxAge:   3600,
