@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"github.com/agung96tm/go-phone-test/internal/authentication"
 	"github.com/agung96tm/go-phone-test/internal/models"
 	"github.com/agung96tm/go-phone-test/internal/validator"
 	"net/http"
@@ -41,12 +40,28 @@ func (app *application) apiSocialGoogleHandler(w http.ResponseWriter, r *http.Re
 		}
 	}
 
-	accessToken, err := authentication.GenerateJWT(user)
+	accessToken, err := app.jwt.GenerateJWT(user)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"access": accessToken}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) apiPhoneAutoHandler(w http.ResponseWriter, r *http.Request) {
+	provider, phoneNumber, err := app.models.Phone.GetRandPhoneNumber()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{
+		"provider":     provider,
+		"phone_number": phoneNumber,
+	}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
@@ -92,7 +107,7 @@ func (app *application) apiPhoneCreateHandler(w http.ResponseWriter, r *http.Req
 	v.CheckField(validator.NotBlank(input.Provider), "provider", "This field cannot be blank")
 	v.CheckField(validator.MinChars(input.PhoneNumber, 10), "phone_number", "This field must greater or equal than 10 characters")
 	v.CheckField(validator.MaxChars(input.PhoneNumber, 15), "phone_number", "This field must lower or equal than 15 characters")
-	v.CheckField(validator.In(input.Provider, []string{"telkomsel", "xl", "indosat", "tri", "smartfreen"}...), "provider", "This field include wrong provider")
+	v.CheckField(validator.In(input.Provider, models.GetProviderKeys()...), "provider", "This field include wrong provider")
 	if !v.Valid() {
 		app.failedValidationResponse(w, r, v.FieldErrors)
 		return
@@ -105,22 +120,6 @@ func (app *application) apiPhoneCreateHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	err = app.writeJSON(w, http.StatusCreated, envelope{"phone": phone}, nil)
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-	}
-}
-
-func (app *application) apiPhoneAutoHandler(w http.ResponseWriter, r *http.Request) {
-	provider, phoneNumber, err := app.models.Phone.GetRandPhoneNumber()
-	if err != nil {
-		app.serverErrorResponse(w, r, err)
-		return
-	}
-
-	err = app.writeJSON(w, http.StatusOK, envelope{
-		"provider":     provider,
-		"phone_number": phoneNumber,
-	}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

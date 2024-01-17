@@ -1,3 +1,7 @@
+# Include variables from .envrc file
+include .envrc
+
+
 ## help: print this help message
 .PHONY: help
 help:
@@ -10,7 +14,7 @@ help:
 ## run/api: run the api application
 .PHONY: run/api
 run/api:
-	go run ./cmd/api -addr :8000
+	go run ./cmd/api -addr ${API_ADDR} -db-dsn=${DB_DSN} -secret-key=${SECRET_KEY}
 
 ## run/web: run the web application
 .PHONY: run/web

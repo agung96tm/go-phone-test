@@ -12,64 +12,30 @@ import (
 	"time"
 )
 
-type Config struct {
-	addr string
-	DB   struct {
-		dsn string
-	}
-	cors struct {
-		trustedOrigins []string
-	}
-	googleOauth2 struct {
-		RedirectURL  string
-		ClientID     string
-		ClientSecret string
-		SendTokenUrl string
-	}
-}
-
-func DefaultConfig() Config {
-	return Config{
-		cors: struct{ trustedOrigins []string }{
-			trustedOrigins: []string{
-				"http://localhost:3000",
-				"http://localhost:4000",
-				"http://localhost:5000",
-			},
-		},
-		googleOauth2: struct {
-			RedirectURL  string
-			ClientID     string
-			ClientSecret string
-			SendTokenUrl string
-		}{
-			SendTokenUrl: "http://localhost:8000/v1/social/google/",
-			RedirectURL:  "http://localhost:3000/auth/google/callback",
-			ClientID:     "1046501910353-j8lpao3d9485detkr7gg7n6hjj6mgdme.apps.googleusercontent.com",
-			ClientSecret: "GbVTVd9TH_jM3evIKcx6VayB",
-		},
-	}
-}
-
 type application struct {
 	models       *models.Models
 	infoLog      *log.Logger
 	errorLog     *log.Logger
 	config       Config
 	googleOauth2 *authentication.GoogleOauth2
+	jwt          *authentication.JWT
 }
 
 func main() {
 	cfg := DefaultConfig()
 
-	flag.StringVar(&cfg.addr, "addr", ":8000", "HTTP network address")
+	flag.StringVar(&cfg.SecretKey, "secret-key", "foobar", "")
+	flag.StringVar(&cfg.Addr, "addr", ":8000", "HTTP network Address")
 	flag.StringVar(&cfg.DB.dsn, "db-dsn", "postgres://phone_user:phone_password@localhost:5432/phone_db?sslmode=disable", "Database DSN")
+
+	flag.StringVar(&cfg.googleOauth2.ClientID, "oauth2-google-clientid", "", "Google Oauth2 Client ID")
+	flag.StringVar(&cfg.googleOauth2.ClientSecret, "oauth2-google-clientsecret", "", "Google Oauth2 Client Secret")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	db, err := initDB(cfg.DB.dsn)
+	db, err := initDB(cfg.DB)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -79,6 +45,7 @@ func main() {
 		infoLog:  infoLog,
 		errorLog: errorLog,
 		config:   cfg,
+		jwt:      authentication.NewJWT(cfg.SecretKey),
 		googleOauth2: authentication.NewGoogleOauth2(
 			cfg.googleOauth2.RedirectURL,
 			cfg.googleOauth2.SendTokenUrl,
@@ -88,7 +55,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:         cfg.addr,
+		Addr:         cfg.Addr,
 		ErrorLog:     errorLog,
 		Handler:      app.routes(),
 		IdleTimeout:  time.Minute,
@@ -96,13 +63,13 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	infoLog.Printf("Starting server on: %s\n", cfg.addr)
+	infoLog.Printf("Starting server on: %s\n", cfg.Addr)
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
 
-func initDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", dsn)
+func initDB(config DBConfig) (*sql.DB, error) {
+	db, err := sql.Open("postgres", config.dsn)
 	if err != nil {
 		return nil, err
 	}

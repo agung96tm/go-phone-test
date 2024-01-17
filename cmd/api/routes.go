@@ -10,7 +10,6 @@ func (app *application) routes() http.Handler {
 	routes := httprouter.New()
 
 	dynamic := alice.New(app.authenticate)
-
 	routes.Handler(http.MethodPost, "/v1/social/google/", dynamic.ThenFunc(app.apiSocialGoogleHandler))
 
 	protected := dynamic.Append(app.requireAuthentication)

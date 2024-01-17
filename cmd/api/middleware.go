@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"github.com/agung96tm/go-phone-test/internal/authentication"
 	"github.com/agung96tm/go-phone-test/internal/models"
 	"net/http"
 	"strconv"
@@ -52,7 +51,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		}
 
 		token := headerParts[1]
-		claims, err := authentication.GetClaims(token)
+		claims, err := app.jwt.GetClaims(token)
 		if err != nil {
 		}
 

@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+var Providers = map[string]string{
+	"telkomsel":  "Telkomsel",
+	"xl":         "XL",
+	"indosat":    "Indosat",
+	"tri":        "tri",
+	"smartfreen": "smartfreen",
+}
+
 type Phone struct {
 	ID          int    `json:"id"`
 	PhoneNumber string `json:"phone_number"`
@@ -94,12 +102,18 @@ func (m PhoneModel) GetRandPhoneNumber() (string, string, error) {
 	}
 }
 
-func GetRandomProvider() string {
-	providers := []string{"telkomsel", "xl", "indosat", "tri", "smartfreen"}
+func GetProviderKeys() []string {
+	var result []string
+	for key := range Providers {
+		result = append(result, key)
+	}
+	return result
+}
 
+func GetRandomProvider() string {
+	providers := GetProviderKeys()
 	rand.Seed(time.Now().UnixNano())
 	randomIndex := rand.Intn(len(providers))
-
 	return providers[randomIndex]
 }
 
