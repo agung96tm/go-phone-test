@@ -2,13 +2,19 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"github.com/agung96tm/go-phone-test/internal/authentication"
-	"github.com/go-playground/form/v4"
 	"net/http"
 	"runtime/debug"
 )
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	isAuthenticated, ok := r.Context().Value(authentication.IsAuthenticatedKey).(bool)
+	if !ok {
+		return false
+	}
+	return isAuthenticated
+}
 
 func (app *application) serverError(w http.ResponseWriter, r *http.Request, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
@@ -38,30 +44,4 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 
 	w.WriteHeader(status)
 	buf.WriteTo(w)
-}
-
-func (app *application) decodePostForm(r *http.Request, dst any) error {
-	err := r.ParseForm()
-	if err != nil {
-		return err
-	}
-
-	err = app.formDecoder.Decode(dst, r.PostForm)
-	if err != nil {
-		var invalidDecoderError *form.InvalidDecoderError
-		if errors.As(err, &invalidDecoderError) {
-			panic(err)
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (app *application) isAuthenticated(r *http.Request) bool {
-	isAuthenticated, ok := r.Context().Value(authentication.IsAuthenticatedKey).(bool)
-	if !ok {
-		return false
-	}
-	return isAuthenticated
 }

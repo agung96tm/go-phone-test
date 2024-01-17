@@ -13,8 +13,8 @@ func (app *application) routes() http.Handler {
 
 	routes.Handler(http.MethodGet, "/login", dynamic.ThenFunc(app.loginHandler))
 	routes.Handler(http.MethodGet, "/logout", dynamic.ThenFunc(app.logoutHandler))
-	routes.Handler(http.MethodGet, "/auth/google/login", dynamic.ThenFunc(app.oauthGoogleLogin))
-	routes.Handler(http.MethodGet, "/auth/google/callback", dynamic.ThenFunc(app.oauthGoogleCallback))
+	routes.Handler(http.MethodGet, "/auth/google/login", dynamic.ThenFunc(app.oauthGoogleLoginHandler))
+	routes.Handler(http.MethodGet, "/auth/google/callback", dynamic.ThenFunc(app.oauthGoogleCallbackHandler))
 
 	protected := dynamic.Append(app.requireAuthentication)
 	routes.Handler(http.MethodGet, "/phones/input", protected.ThenFunc(app.phoneCreateHandler))

@@ -5,7 +5,6 @@ import (
 	"flag"
 	"github.com/agung96tm/go-phone-test/internal/authentication"
 	"github.com/agung96tm/go-phone-test/internal/models"
-	"github.com/go-playground/form/v4"
 	_ "github.com/lib/pq"
 	"html/template"
 	"log"
@@ -14,49 +13,23 @@ import (
 	"time"
 )
 
-type Config struct {
-	addr string
-	DB   struct {
-		dsn string
-	}
-	googleOauth2 struct {
-		RedirectURL  string
-		ClientID     string
-		ClientSecret string
-		SendTokenUrl string
-	}
-}
-
-func DefaultConfig() Config {
-	return Config{
-		googleOauth2: struct {
-			RedirectURL  string
-			ClientID     string
-			ClientSecret string
-			SendTokenUrl string
-		}{
-			SendTokenUrl: "http://localhost:8000/v1/social/google/",
-			RedirectURL:  "http://localhost:3000/auth/google/callback",
-			ClientID:     "1046501910353-j8lpao3d9485detkr7gg7n6hjj6mgdme.apps.googleusercontent.com",
-			ClientSecret: "GbVTVd9TH_jM3evIKcx6VayB",
-		},
-	}
-}
-
 type application struct {
 	models        *models.Models
 	infoLog       *log.Logger
 	errorLog      *log.Logger
 	templateCache map[string]*template.Template
-	formDecoder   *form.Decoder
 	googleOauth2  *authentication.GoogleOauth2
 }
 
 func main() {
 	cfg := DefaultConfig()
 
-	flag.StringVar(&cfg.addr, "addr", ":3000", "HTTP network address")
+	flag.StringVar(&cfg.SecretKey, "secret-key", "foobar", "")
+	flag.StringVar(&cfg.Addr, "addr", ":8000", "HTTP network Address")
 	flag.StringVar(&cfg.DB.dsn, "db-dsn", "postgres://phone_user:phone_password@localhost:5432/phone_db?sslmode=disable", "Database DSN")
+
+	flag.StringVar(&cfg.googleOauth2.ClientID, "oauth2-google-clientid", "", "Google Oauth2 Client ID")
+	flag.StringVar(&cfg.googleOauth2.ClientSecret, "oauth2-google-clientsecret", "", "Google Oauth2 Client Secret")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -86,7 +59,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:         cfg.addr,
+		Addr:         cfg.Addr,
 		ErrorLog:     errorLog,
 		Handler:      app.routes(),
 		IdleTimeout:  time.Minute,
@@ -94,7 +67,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	infoLog.Printf("Starting server on: %s\n", cfg.addr)
+	infoLog.Printf("Starting server on: %s\n", cfg.Addr)
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }

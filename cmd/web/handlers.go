@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+/* --------------------------------------------
+//	Phone (CRUD)
+// -------------------------------------------- */
+
 func (app *application) phoneListHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	app.render(w, http.StatusOK, "phone_list.tmpl", data)
@@ -19,6 +23,10 @@ func (app *application) phoneCreateHandler(w http.ResponseWriter, r *http.Reques
 	}{}
 	app.render(w, http.StatusOK, "phone_create.tmpl", data)
 }
+
+/* --------------------------------------------
+//	Auth
+// -------------------------------------------- */
 
 func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
@@ -39,14 +47,14 @@ func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
 }
 
-func (app *application) oauthGoogleLogin(w http.ResponseWriter, r *http.Request) {
+func (app *application) oauthGoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 	oauthState := app.googleOauth2.GenerateStateOauthCookie(w)
 	u := app.googleOauth2.Config.AuthCodeURL(oauthState)
 
 	http.Redirect(w, r, u, http.StatusTemporaryRedirect)
 }
 
-func (app *application) oauthGoogleCallback(w http.ResponseWriter, r *http.Request) {
+func (app *application) oauthGoogleCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	if valid := app.googleOauth2.StateValid(r); !valid {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
