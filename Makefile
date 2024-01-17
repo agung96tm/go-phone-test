@@ -22,7 +22,7 @@ run/web:
 
 ## db/migrations/up: apply all up database migrations
 .PHONY: db/migrations/up
-db/migration/up: confirm
+db/migration/up:
 	@echo "Running up migrations..."
 	migrate -path ./migrations -database ${DB_DSN} up
 

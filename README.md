@@ -15,14 +15,10 @@ $ migrate -version
 4.14.1
 ```
 
-### Run migrations
+### Migrate and Run Applications
 ```
-$ export DB_DSN="user=phone_user dbname=phone_db password=phone_password sslmode=disable"
-$ migrate -path=./migrations -database=$DB_DSN up
+$ make db/migration/up
+$ make run/web
+$ make run/api
 ```
-
-### Run Projects
-```
-$ go run ./cmd/api
-$ go run ./cmd/web
-```
+nb: run `run/web` and `run/api` with separate terminals.
