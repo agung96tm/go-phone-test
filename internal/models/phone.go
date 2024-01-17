@@ -122,7 +122,7 @@ func GetRandomPhoneNumber(provider string) string {
 	}
 
 	rand.Seed(time.Now().UnixNano())
-	randomDigits := fmt.Sprintf("%07d", rand.Intn(10000000))
+	randomDigits := fmt.Sprintf("%08d", rand.Intn(10000000))
 
 	phoneNumber := prefix + randomDigits
 
