@@ -1,4 +1,4 @@
-Phone Go
+Go Phone Test
 =========================================
 
 ### How to Run
@@ -35,6 +35,7 @@ nb: run `run/web` and `run/api` with separate terminals.
 * Web: http://localhost:3000/login
 * Backend: http://localhost:8000
 
+------------
 
 ### Contributors
 * Agung Yuliyanto: [Github](https://github.com/agung96tm), [LinkedIn](https://www.linkedin.com/in/agung96tm/)
