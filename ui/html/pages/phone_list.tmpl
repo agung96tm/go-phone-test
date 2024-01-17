@@ -10,16 +10,68 @@
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td class="py-2 px-4 border-b">John Doe</td>
-          <td class="py-2 px-4 border-b">Developer</td>
+        <tr v-for='(row, index) in phones' :key='index'>
+          <td class="py-2 px-4 border-b">${ row.odd || '-' }</td>
+          <td class="py-2 px-4 border-b">${ row.even || '-' }</td>
         </tr>
-        <tr>
-          <td class="py-2 px-4 border-b">Jane Smith</td>
-          <td class="py-2 px-4 border-b">Developer</td>
-        </tr>
-        <!-- Add more rows as needed -->
       </tbody>
     </table>
 </div>
+{{end}}
+
+{{define "js"}}
+    new Vue({
+      el: '#app',
+      delimiters: ['${', '}'],
+      data: {
+        fetchDataInterval: null,
+        phones: [],
+      },
+      mounted() {
+        this.startFetchData();
+      },
+      beforeDestroy() {
+        this.stopFetchData();
+      },
+      methods: {
+        isOddPhoneNumbers (phoneNumber) {
+          return parseInt(phoneNumber.slice(-1), 10) % 2 !== 0;
+        },
+        startFetchData() {
+            this.fetchData();
+            this.fetchDataInterval = setInterval(() => {
+                this.fetchData();
+            }, 10000);
+        },
+        stopFetchData() {
+            clearInterval(this.fetchDataInterval);
+        },
+        fetchData() {
+          const phoneUrl = 'http://localhost:8000/v1/phones/';
+          axios.get(phoneUrl)
+            .then(response => {
+              const { phones } = response.data;
+              let evenPhones = [];
+              let oddPhones = [];
+
+              if (phones.length > 0) {
+                oddPhones = phones.filter(phone => this.isOddPhoneNumbers(phone.phone_number));
+                evenPhones = phones.filter(phone => !this.isOddPhoneNumbers(phone.phone_number));
+              }
+
+              const maxLength = Math.max(oddPhones.length, evenPhones.length);
+              this.phones = [];
+              for (let i = 0; i < maxLength; i++) {
+                this.phones.push({
+                    odd: oddPhones?.[i]?.phone_number,
+                    even: evenPhones?.[i]?.phone_number,
+                });
+              }
+            })
+            .catch(error => {
+              console.error('Error fetching data:', error);
+            });
+        }
+      }
+    });
 {{end}}

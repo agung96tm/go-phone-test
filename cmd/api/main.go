@@ -11,10 +11,25 @@ import (
 	"time"
 )
 
-type config struct {
+type Config struct {
 	addr string
 	DB   struct {
 		dsn string
+	}
+	cors struct {
+		trustedOrigins []string
+	}
+}
+
+func DefaultConfig() Config {
+	return Config{
+		cors: struct{ trustedOrigins []string }{
+			trustedOrigins: []string{
+				"http://localhost:3000",
+				"http://localhost:4000",
+				"http://localhost:5000",
+			},
+		},
 	}
 }
 
@@ -22,10 +37,11 @@ type application struct {
 	models   *models.Models
 	infoLog  *log.Logger
 	errorLog *log.Logger
+	config   Config
 }
 
 func main() {
-	var cfg config
+	cfg := DefaultConfig()
 
 	flag.StringVar(&cfg.addr, "addr", ":8000", "HTTP network address")
 	flag.StringVar(&cfg.DB.dsn, "db-dsn", "postgres://phone_user:phone_password@localhost:5432/phone_db?sslmode=disable", "Database DSN")
@@ -43,6 +59,7 @@ func main() {
 		models:   models.New(db),
 		infoLog:  infoLog,
 		errorLog: errorLog,
+		config:   cfg,
 	}
 
 	srv := &http.Server{

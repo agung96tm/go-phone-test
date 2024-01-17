@@ -19,7 +19,7 @@ type PhoneForm struct {
 func (app *application) phoneCreateHandler(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Form = PhoneForm{}
-	app.render(w, http.StatusOK, "phone_form.tmpl", data)
+	app.render(w, http.StatusOK, "phone_create.tmpl", data)
 }
 
 func (app *application) phoneCreatePostHandler(w http.ResponseWriter, r *http.Request) {
