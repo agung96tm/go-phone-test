@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/agung96tm/go-phone-test/internal/authentication"
 	"github.com/go-playground/form/v4"
 	"net/http"
 	"runtime/debug"
@@ -55,4 +56,12 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 	}
 
 	return nil
+}
+
+func (app *application) isAuthenticated(r *http.Request) bool {
+	isAuthenticated, ok := r.Context().Value(authentication.IsAuthenticatedKey).(bool)
+	if !ok {
+		return false
+	}
+	return isAuthenticated
 }

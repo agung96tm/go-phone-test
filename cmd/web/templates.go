@@ -11,11 +11,14 @@ import (
 var functions = template.FuncMap{}
 
 type templateData struct {
-	Form any
+	Form            any
+	IsAuthenticated bool
 }
 
 func (app *application) newTemplateData(r *http.Request) *templateData {
-	return &templateData{}
+	return &templateData{
+		IsAuthenticated: app.isAuthenticated(r),
+	}
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {

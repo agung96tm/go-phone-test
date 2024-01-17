@@ -4,8 +4,15 @@
       <a href="#" class="text-white text-lg font-semibold">Phones</a>
 
       <div class="flex items-center space-x-4">
-        <a href="/phones/input" class="text-white hover:underline">Input</a>
-        <a href="/phones/output" class="text-white hover:underline">Output</a>
+        {{if .IsAuthenticated}}
+            <div class="space-x-4 flex items-center">
+                <a href="/phones/input" class="text-white hover:underline">Input</a>
+                <a href="/phones/output" class="text-white hover:underline">Output</a>
+                <a href="/logout" class="text-white hover:underline">Logout</a>
+            </div>
+        {{else}}
+            <a href="/login" class="text-white hover:underline">Login</a>
+        {{end}}
       </div>
     </div>
   </nav>

@@ -6,6 +6,22 @@ import (
 	"net/http"
 )
 
+func (app *application) apiSocialGoogleHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Token string `json:"token"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.errorResponse(w, r, http.StatusBadRequest, nil)
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"token": input.Token}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
 func (app *application) apiPhoneListHandler(w http.ResponseWriter, r *http.Request) {
 	var queryFilter struct {
 		OddEven string `json:"odd_even"`
