@@ -34,6 +34,16 @@
         this.stopFetchData();
       },
       methods: {
+        getAccessToken() {
+            return document.cookie.split('; ').find(row => row.startsWith('accessToken=')).split('=')[1];
+        },
+        deleteCookie(name) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+        },
+        redirectToLogin() {
+            this.deleteCookie('accessToken');
+            window.location.href = '/login';
+        },
         isOddPhoneNumbers (phoneNumber) {
           return parseInt(phoneNumber.slice(-1), 10) % 2 !== 0;
         },
@@ -48,8 +58,13 @@
         },
         fetchData() {
           const phoneUrl = 'http://localhost:8000/v1/phones/';
-          axios.get(phoneUrl)
-            .then(response => {
+          axios.get(phoneUrl, {
+            headers: {
+                'Authorization': `Bearer ${this.getAccessToken()}`,
+                'Content-Type': 'application/json',
+                },
+            }
+          ).then(response => {
               const { phones } = response.data;
               let evenPhones = [];
               let oddPhones = [];
@@ -69,6 +84,11 @@
               }
             })
             .catch(error => {
+              const { status, data } = e.response;
+              if (status === 401) {
+                  this.redirectToLogin();
+                  return;
+              }
               console.error('Error fetching data:', error);
             });
         }
